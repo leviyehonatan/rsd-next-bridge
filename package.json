@@ -1,0 +1,27 @@
+{
+    "name": "@leviyehonatan/rsd-next-bridge",
+    "version": "0.1.0",
+    "description": "The reusable bridge that makes React Strict DOM (RSD) theme + style machinery work in a Next.js (App Router) web app — Babel/PostCSS stylex wiring, dev runtime CSS injection, documentElement theming, and body-portal css-var cascade.",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./babel-preset": "./src/babel/preset.js",
+        "./postcss": "./src/postcss/collector.cjs",
+        "./rsd-theme-plugin": "./src/babel/rsd-theme-plugin.cjs",
+        "./theme-root": "./src/lib/theme-root.web.ts",
+        "./web-portal": "./src/lib/web-portal.web.ts"
+    },
+    "files": ["src"],
+    "peerDependencies": {
+        "react-dom": "^19.0.0",
+        "react-strict-dom": "^0.0.55"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.18"
+    }
+}

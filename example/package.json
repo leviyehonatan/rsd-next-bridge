@@ -1,0 +1,34 @@
+{
+    "name": "@repo/rsd-next-bridge-example",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev --webpack --port 3007",
+        "build": "next build --webpack",
+        "start": "next start",
+        "test": "node e2e/verify.cjs",
+        "test:build": "next build --webpack",
+        "test:dev-styling": "npx playwright test"
+    },
+    "dependencies": {
+        "@repo/rsd-next-bridge": "*",
+        "next": "^16.2.7",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native-web": "0.21.2",
+        "react-strict-dom": "0.0.55"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-react": "^7.26.3",
+        "@babel/preset-typescript": "^7.26.0",
+        "@stylexjs/postcss-plugin": "0.17.5",
+        "@types/node": "^22.0.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "autoprefixer": "^10.4.20",
+        "babel-plugin-module-resolver": "^5.0.3",
+        "postcss": "^8.4.49",
+        "typescript": "5.9.3"
+    }
+}
