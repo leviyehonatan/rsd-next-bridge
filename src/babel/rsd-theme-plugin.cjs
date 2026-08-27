@@ -49,7 +49,14 @@ function createRsdThemePlugin({ themeCssPath, sourceRe = DEFAULT_SOURCE_RE } = {
                         return;
                     }
                     const src = importPath.node.source.value;
-                    if (!src || !/tokens\.stylex(\.tsx?)?$/.test(src)) return;
+                    // The suffix varies by how the package was built:
+                    //   ../tokens.stylex        source / workspace checkout
+                    //   ./tokens.stylex.js      published themable bundle,
+                    //                           where it is a sibling entry
+                    // Matching only the extensionless and .ts forms silently
+                    // skips the published bundle — no error, just the
+                    // library's own palette and no dark mode.
+                    if (!src || !/tokens\.stylex(\.[cm]?[jt]sx?)?$/.test(src)) return;
                     const names = importPath.node.specifiers;
                     if (!(names.some((s) => s.type === 'ImportSpecifier' && s.imported.name === 'theme'))) {
                         return;
