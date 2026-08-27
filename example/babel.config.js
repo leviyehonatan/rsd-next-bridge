@@ -5,7 +5,7 @@ const { SRC, moduleResolverAlias } = require('./alias.config');
 module.exports = {
     presets: [
         [
-            require('@repo/rsd-next-bridge/babel-preset'),
+            require('@leviyehonatan/rsd-next-bridge/babel-preset'),
             {
                 dev: process.env.NODE_ENV !== 'production',
                 rootDir: __dirname,

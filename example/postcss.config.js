@@ -1,6 +1,6 @@
 // StyleX CSS extraction for prod via the bridge's collector config.
 const { SRC, moduleResolverAlias } = require('./alias.config');
-const { stylexCollectorConfig } = require('@repo/rsd-next-bridge/postcss');
+const { stylexCollectorConfig } = require('@leviyehonatan/rsd-next-bridge/postcss');
 
 module.exports = {
     plugins: {

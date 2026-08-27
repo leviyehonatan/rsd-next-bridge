@@ -5,7 +5,7 @@
  * documentElement (instead of a wrapper), so even body-portaled content inherits.
  */
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { applyThemeToDocumentRoot } from '@repo/rsd-next-bridge';
+import { applyThemeToDocumentRoot } from '@leviyehonatan/rsd-next-bridge';
 import { darkTheme, chartDarkTheme } from '../tokens/theme.vars.css';
 
 const THEME_COOKIE = 'tunity_theme';

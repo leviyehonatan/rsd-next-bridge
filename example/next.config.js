@@ -5,13 +5,13 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
-    outputFileTracingRoot: path.join(__dirname, '../../../'),
+    outputFileTracingRoot: path.join(__dirname, '..'),
     // Build with webpack (RSD needs Babel/StyleX).
     // Next 16 blocks HMR on non-allowlisted origins (writes a bare "Unauthorized"
     // to the HMR websocket upgrade → ERR_INVALID_HTTP_RESPONSE → silent no-hydrate).
     // loopback MUST be allowed or dev HMR is dead for the default localhost/127 URL.
     allowedDevOrigins: ['localhost', '127.0.0.1', '::1'],
-    transpilePackages: ['react-strict-dom', '@repo/rsd-next-bridge', 'react-native-web'],
+    transpilePackages: ['react-strict-dom', '@leviyehonatan/rsd-next-bridge', 'react-native-web'],
     typescript: { ignoreBuildErrors: true },
     webpack(config, { webpack }) {
         const { moduleResolverAlias } = require('./alias.config');
