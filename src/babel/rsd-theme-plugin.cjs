@@ -36,6 +36,17 @@ const path = require('path');
 // the directory is named for the alias rather than the package.
 const DEFAULT_SOURCE_RE = /chord-chart-rsd[\\/](?:src|dist)[\\/]/;
 
+// The theme module as it appears in an import specifier. The suffix varies by
+// how the package was built:
+//   ../tokens.stylex        source / workspace checkout
+//   ./tokens.stylex.js      published themable bundle, where it is a sibling
+//                           entry emitted with a fully-specified ESM import
+// Matching only the extensionless and .ts forms silently skips the published
+// bundle — no error, just the library's own palette and no dark mode. This is
+// the same blind spot as a src/-only DEFAULT_SOURCE_RE and is independent of
+// it: the visitor clears that gate and then bails out here instead.
+const TOKENS_SPECIFIER_RE = /tokens\.stylex(\.[cm]?[jt]sx?)?$/;
+
 function createRsdThemePlugin({ themeCssPath, sourceRe = DEFAULT_SOURCE_RE } = {}) {
     if (!themeCssPath) {
         throw new Error('rsd-theme-plugin: `themeCssPath` is required');
@@ -49,14 +60,7 @@ function createRsdThemePlugin({ themeCssPath, sourceRe = DEFAULT_SOURCE_RE } = {
                         return;
                     }
                     const src = importPath.node.source.value;
-                    // The suffix varies by how the package was built:
-                    //   ../tokens.stylex        source / workspace checkout
-                    //   ./tokens.stylex.js      published themable bundle,
-                    //                           where it is a sibling entry
-                    // Matching only the extensionless and .ts forms silently
-                    // skips the published bundle — no error, just the
-                    // library's own palette and no dark mode.
-                    if (!src || !/tokens\.stylex(\.[cm]?[jt]sx?)?$/.test(src)) return;
+                    if (!src || !TOKENS_SPECIFIER_RE.test(src)) return;
                     const names = importPath.node.specifiers;
                     if (!(names.some((s) => s.type === 'ImportSpecifier' && s.imported.name === 'theme'))) {
                         return;
@@ -74,3 +78,4 @@ module.exports.createRsdThemePlugin = createRsdThemePlugin;
 // Exported for the regression tests that pin which package layouts the
 // tokens.stylex rewrite fires for (see rsd-theme-plugin.test.cjs).
 module.exports.DEFAULT_SOURCE_RE = DEFAULT_SOURCE_RE;
+module.exports.TOKENS_SPECIFIER_RE = TOKENS_SPECIFIER_RE;

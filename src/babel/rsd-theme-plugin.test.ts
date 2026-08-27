@@ -39,3 +39,79 @@ describe('DEFAULT_SOURCE_RE', () => {
         expect(RE.test(filename)).toBe(false);
     });
 });
+
+/**
+ * Guards which *import specifiers* the rewrite fires for.
+ *
+ * A second blind spot with the same shape as the `src/`-only DEFAULT_SOURCE_RE,
+ * and independent of it — fixing that one does not fix this one. The extension
+ * list was `.ts`/`.tsx` only, but the published themable bundle emits a
+ * fully-specified ESM import (`./tokens.stylex.js`), so the visitor cleared the
+ * filename gate and then bailed out one line later. The rewrite still never
+ * fired for a registry install.
+ */
+describe('TOKENS_SPECIFIER_RE', () => {
+    const RE: RegExp = plugin.TOKENS_SPECIFIER_RE;
+
+    it.each([
+        ['bare, from a source checkout', '../tokens.stylex'],
+        ['published themable bundle', './tokens.stylex.js'],
+        ['typescript source', './tokens.stylex.ts'],
+        ['typescript with JSX', './tokens.stylex.tsx'],
+        ['explicit ESM', './tokens.stylex.mjs'],
+        ['explicit CommonJS', './tokens.stylex.cjs'],
+        ['deep relative path', '../../theme/tokens.stylex.js'],
+    ])('matches %s', (_label, specifier) => {
+        expect(RE.test(specifier)).toBe(true);
+    });
+
+    it.each([
+        ['a different module', './tokens.js'],
+        ['a lookalike suffix', './my-tokens.stylexish.js'],
+        ['a subpath below it', './tokens.stylex/index.js'],
+    ])('leaves %s alone', (_label, specifier) => {
+        expect(RE.test(specifier)).toBe(false);
+    });
+});
+
+/**
+ * End-to-end guard: the two regexes are only interesting because of what they
+ * gate together. This runs the real plugin over a file shaped like the
+ * published package and asserts the import is actually rewritten.
+ *
+ * This is the case that would have caught the `.js` bug, because both regexes
+ * can be individually correct while the visitor still declines to rewrite —
+ * which is exactly how it hid behind the `dist/` fix.
+ */
+describe('rewrite, end to end', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const babel = require('@babel/core');
+    const THEME = '/w/packages/app/src/lib/chart-theme.css';
+    const DIST_FILE = '/w/node_modules/chord-chart-rsd/dist/web-themable/rsd.js';
+
+    const transform = (code: string, filename: string) =>
+        babel.transformSync(code, {
+            filename,
+            babelrc: false,
+            configFile: false,
+            plugins: [plugin.createRsdThemePlugin({ themeCssPath: THEME })],
+        }).code as string;
+
+    it('rewrites the published bundle import to the app theme module', () => {
+        const out = transform('import { theme } from "./tokens.stylex.js";\ntheme.paperBg;', DIST_FILE);
+        expect(out).toContain(THEME);
+        expect(out).not.toContain('./tokens.stylex.js');
+    });
+
+    it('leaves an unrelated package alone', () => {
+        const out = transform('import { theme } from "./tokens.stylex.js";', '/w/node_modules/other-pkg/dist/x.js');
+        expect(out).toContain('./tokens.stylex.js');
+        expect(out).not.toContain(THEME);
+    });
+
+    it('leaves a non-theme import from the same module alone', () => {
+        const out = transform('import { spacing } from "./tokens.stylex.js";', DIST_FILE);
+        expect(out).toContain('./tokens.stylex.js');
+        expect(out).not.toContain(THEME);
+    });
+});
