@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { html, css } from 'react-strict-dom';
-import { portalToBody } from '@repo/rsd-next-bridge';
+import { portalToBody } from '@leviyehonatan/rsd-next-bridge';
 import { colors } from '../tokens/theme.vars.css';
 
 export function PortalModal() {

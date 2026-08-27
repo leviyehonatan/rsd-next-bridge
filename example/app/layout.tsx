@@ -10,7 +10,7 @@ import './global-base.css';
 import type { ReactNode } from 'react';
 import { cookies } from 'next/headers';
 import { darkTheme, chartDarkTheme } from '../tokens/theme.vars.css';
-import { darkRootThemeClass } from '@repo/rsd-next-bridge/theme-root';
+import { darkRootThemeClass } from '@leviyehonatan/rsd-next-bridge/theme-root';
 import { Providers } from './providers';
 
 // The compiled dark-theme classes for the two theme families (extracted at

@@ -20,6 +20,68 @@ one place with a README instead of being scattered across a `babel.config.js`, a
 
 ---
 
+## Install
+
+Published to **GitHub Packages**, private — the package inherits the visibility
+of `leviyehonatan/rsd-next-bridge`, which is a private repo. So consumers need
+to point the `@leviyehonatan` scope at GitHub's registry and authenticate. In
+the consuming repo:
+
+```ini
+# .npmrc
+@leviyehonatan:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}
+```
+
+`GH_PACKAGES_TOKEN` must be a **personal access token with `read:packages`**,
+belonging to an account that has read access to this repo. A workflow's built-in
+`secrets.GITHUB_TOKEN` will NOT work from another repository — it is scoped to
+the repo it runs in, and this package is linked to a private repo it has no
+rights on. Store the PAT as a secret in the consuming repo and expose it as
+`GH_PACKAGES_TOKEN` for both `npm install` and any Docker build that installs
+deps. Then:
+
+```sh
+npm install @leviyehonatan/rsd-next-bridge
+```
+
+`react-dom` and `react-strict-dom` are peer deps — the consuming app already has
+them.
+
+### This package ships TypeScript source, not a build
+
+Unlike `@leviyehonatan/chord-chart-rsd` (which publishes bundles), the bridge
+ships `src/` as-is: its Babel preset and PostCSS collector are `require`d from
+config files, and its `.ts` modules must go through **the consuming app's own**
+Babel/StyleX pass anyway — that's the whole point of the package. So add it to
+`transpilePackages`:
+
+```js
+// next.config.js
+transpilePackages: ['react-strict-dom', '@leviyehonatan/rsd-next-bridge', 'react-native-web'],
+```
+
+Without that, Next will hand raw `.ts` to webpack and the build fails on the
+first type annotation.
+
+### Releasing
+
+`.github/workflows/publish.yml` publishes on a `v*` tag, using the workflow's
+built-in `GITHUB_TOKEN` — there is no secret to configure:
+
+```sh
+npm version <patch|minor|major>
+git push --follow-tags
+```
+
+The run fails rather than publishing if the tag disagrees with
+`package.json`'s version. `workflow_dispatch` publishes the checked-out ref by
+hand (how `chord-chart-rsd` has been released so far) or re-runs a publish that
+failed after the tag exists. `prepublishOnly` gates every publish on typecheck +
+tests.
+
+---
+
 ## The one-sentence version
 
 > RSD compiles `css.create()` into StyleX class names + `var(--x…)` references at
@@ -199,7 +261,7 @@ module.exports = {
             include: [
                 'app/**/*.{js,jsx,ts,tsx}',
                 '../../packages/app/src/**/*.{js,jsx,ts,tsx}',
-                '../../node_modules/chord-chart-rsd/src/**/*.{js,jsx,ts,tsx}',
+                '../../node_modules/@leviyehonatan/chord-chart-rsd/dist/web/**/*.js',
             ],
             moduleResolver: {
                 root: [require('./alias.config').SRC],
@@ -320,8 +382,9 @@ consumer would, and doubles as the executable test of every feature:
 Run it:
 
 ```bash
-cd packages/rsd-next-bridge/example
-npm install        # links @leviyehonatan/rsd-next-bridge via the workspace
+cd example
+npm install        # resolves @leviyehonatan/rsd-next-bridge from GitHub Packages;
+                   #   needs GH_PACKAGES_TOKEN in the env (see Install)
 npm run dev        # http://localhost:3007 — toggle theme, open the portal
 npm test           # build + dev-injection assertions (verify.cjs)
 npm run test:dev-styling   # Playwright: dev page is styled on load

@@ -1,0 +1,46 @@
+name: Publish to GitHub Packages
+
+# Tag a release to publish: `npm version <patch|minor|major> && git push --follow-tags`.
+# `workflow_dispatch` publishes the checked-out ref by hand (how chord-chart-rsd
+# has been released) or re-runs a publish that failed after the tag exists.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@leviyehonatan'
+
+      - run: npm ci
+
+      # A tag that disagrees with package.json would publish the wrong version
+      # under the right tag — cheaper to catch here than to unpublish.
+      - name: Check tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag v$tag does not match package.json version $pkg"
+            exit 1
+          fi
+          echo "publishing version $pkg"
+
+      # prepublishOnly runs typecheck + tests. The package ships TS source, so
+      # there is no build step — `files` picks src/ straight out of the checkout.
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

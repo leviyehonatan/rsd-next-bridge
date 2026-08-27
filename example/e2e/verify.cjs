@@ -6,7 +6,7 @@
  * boots `next dev` and asserts the client bundle carries the stylex runtime
  * injection (so dev is styled too — the trap this bridge removes).
  *
- * Run: npm test  (inside packages/rsd-next-bridge/example)
+ * Run: npm test  (inside example/)
  */
 const { spawnSync, spawn } = require('child_process');
 const fs = require('fs');

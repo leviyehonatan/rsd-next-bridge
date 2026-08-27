@@ -16,7 +16,7 @@ export default function Page() {
 
     return (
         <html.div style={styles.page}>
-            <html.span style={styles.heading}>@repo/rsd-next-bridge example</html.span>
+            <html.span style={styles.heading}>@leviyehonatan/rsd-next-bridge example</html.span>
             <html.div style={styles.row}>
                 <html.button style={styles.toggle} onClick={toggle}>
                     Toggle theme ({dark ? 'dark' : 'light'})
